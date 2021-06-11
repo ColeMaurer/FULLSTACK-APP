@@ -1,0 +1,62 @@
+<html>
+    <head>
+        <title>stonks</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    </head>
+    <body>
+      <div class="ui container">
+        <h1>Stock List</h1>
+
+        <form method="get">
+          <select name="filter">
+            <option value="">All Stocks</option>
+            <option {% if request.query_params.filter == 'new_closing_highs' %}selected="selected"{% endif %}
+              value="new_closing_highs">New Closing Highs</option>
+            <option {% if request.query_params.filter == 'new_closing_lows' %}selected="selected"{% endif %}
+              value="new_closing_lows">New Closing Lows</option>
+          </select>
+          <input type="submit" />
+        </form>
+
+        <table class="ui selectable inverted table">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>RSI 14</th>
+              <th>SMA 20</th>
+              <th>SMA 50</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for stock in Stocks %}
+              <tr>
+                <td>{{ stock.symbol }}</td>
+                <td><a href="/stock/{{ stock.symbol }}">{{ stock.name }}</a></td>
+                {% if indicator_values[stock.symbol] %}
+                  <td>{{ indicator_values[stock.symbol].close }}</td>
+                {% if indicator_values[stock.symbol].rsi_14 %}
+                  <td>{{ indicator_values[stock.symbol].rsi_14|round(2) }}</td>
+                {% else %}
+                  <td>N/A</td>
+                {% endif %}
+                {% if indicator_values[stock.symbol].sma_20 %}
+                  <td>{{ indicator_values[stock.symbol].sma_20|round(2) }}</td>
+                {% else %}
+                  <td>N/A</td>
+                {% endif %}
+                {% if indicator_values[stock.symbol].sma_50 %}
+                  <td>{{ indicator_values[stock.symbol].sma_50|round(2) }}</td>
+                {% else %}
+                  <td>N/A</td>
+                {% endif %}
+              {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </body>
+</html>

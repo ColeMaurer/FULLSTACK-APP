@@ -1,0 +1,24 @@
+# Script to drop database (useful for restructuring/rebuilding)
+import sqlite3, Config
+
+connection = sqlite3.connect(Config.DB_FILE)
+
+cursor = connection.cursor()
+
+cursor.execute("""
+    DROP TABLE stock_price
+""")
+
+cursor.execute("""
+    DROP TABLE stock
+""")
+
+cursor.execute("""
+    DROP TABLE strategy
+""")
+
+cursor.execute("""
+    DROP TABLE stock_strategy
+""")
+
+connection.commit()
