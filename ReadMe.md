@@ -5,7 +5,7 @@ In terminal:
 3. Build and populate the database:
 *** You may need to install python packages prior to running these scripts ***
 *** These are listed at the top of the files, or just trying to run them will
-*** result in errors that tell you what is needed.
+*** result in errors that tell you what is needed. Make sure to install 'newtulipy'
   - type "python3 Create_db.py"
   - type "python3 Populate_Stocks.py"
   - type "python3 Populate_Prices.py"
