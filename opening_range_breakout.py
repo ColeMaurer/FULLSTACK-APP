@@ -2,14 +2,15 @@
 # minute range, then we buy and expect it to go up further
 import sqlite3
 import Config
-import datetime
-from datetime import date
+import datetime as dt
+from datetime import date, time
 import pandas as pd
 import threading
 import alpaca_trade_api as tradeapi
 import time
 from alpaca_trade_api.rest import TimeFrame
 import smtplib, ssl
+import pytz
 
 # Email setup
 context = ssl.create_default_context()
@@ -47,13 +48,29 @@ existing_order_symbols = [order.symbol for order in orders]
 
 messages = []
 
+# Set a constant for UTC timezone
+UTC = pytz.timezone('UTC')
+
+# Get the current time, 15minutes, and 1 hour ago
+time_now = dt.datetime.now(tz=UTC)
+time_15_min_ago = time_now - dt.timedelta(minutes=15)
+time_1_hr_ago = time_now - dt.timedelta(hours=1)
+
 for symbol in symbols:
     # Use the following once the alpaca account has been funded and polygon is accessible:
     #minute_bars = api.polygon.historic_agg_v2(symbol, 1, 'minute', _from=current_date, to=current_date).df
-    minute_bars = api.get_bars(symbol, TimeFrame.Minute,        # This comes from the alpaca example: long-short.py
-                                  pd.Timestamp('now').date(),
-                                  pd.Timestamp('now').date(), limit=1,
-                                  adjustment='raw')
+    #minute_bars = api.get_bars(symbol, TimeFrame.Minute,        # This comes from the alpaca example: long-short.py
+        #                          pd.Timestamp('now').date(),
+        #                          pd.Timestamp('now').date(), limit=1,
+        #                          adjustment='raw')
+
+# Get data from previous hour
+# If using the Free plan, the latest one can fetch is 15 minutes ago
+    minute_bars = api.get_bars(symbol, TimeFrame.Minute,
+                                start=time_1_hr_ago.isoformat(),
+                                end=time_15_min_ago.isoformat(),
+                                adjustment='raw'
+                                ).df
 
     opening_range_mask = (minute_bars.index >= start_minute_bar) & (minute_bars.index < end_minute_bar)
     opening_range_bars = minute_bars.loc[opening_range_mask]
@@ -65,9 +82,11 @@ for symbol in symbols:
     after_opening_range_bars = minute_bars.loc[after_opening_range_mask]
 
     after_opening_range_breakout = after_opening_range_bars[after_opening_range_bars['close'] > opening_range_high]
-
+    #print("Made it to line 85!")
     if not after_opening_range_breakout.empty: # if we have breakout candidates
+        #print("We have breakout candidates?")
         if symbol not in existing_order_symbols: # if we have not already bought a stock
+            #print("No orders yet")
             limit_price = after_opening_range_breakout.iloc[0]['close']
             messages.append(f"placing order for {symbol} at {limit_price}, closed above {opening_range_high}\n\n{after_opening_range_breakout.iloc[0]}\n\n")
             print(f"placing order for {symbol} at {limit_price}, closed above {opening_range_high} at {after_opening_range_breakout.iloc[0]}")
@@ -90,12 +109,12 @@ for symbol in symbols:
         else:
             print(f"Already an order for {symbol}, skipping")
 print(messages)
-
-with smtplib.SMTP_SSL(Config.EMAIL_HOST, Config.EMAIL_PORT, context=context) as server:
-    server.login(Config.EMAIL_ADDRESS, Config.EMAIL_PASSWORD)
-
-    email_message = f"Subject: Trade Notifications for {current_date}\n\n"
-    email_message += "\n\n".join(messages)
-
-    server.sendmail(Config.EMAIL_ADDRESS, Config.EMAIL_ADDRESS, email_message)
-    server.sendmail(Config.EMAIL_ADDRESS, Config.EMAIL_SMS, email_message)
+#print("No breakout candidates determined")
+#with smtplib.SMTP_SSL(Config.EMAIL_HOST, Config.EMAIL_PORT, context=context) as server:
+#    server.login(Config.EMAIL_ADDRESS, Config.EMAIL_PASSWORD)
+#
+#    email_message = f"Subject: Trade Notifications for {current_date}\n\n"
+#    email_message += "\n\n".join(messages)
+#
+#    server.sendmail(Config.EMAIL_ADDRESS, Config.EMAIL_ADDRESS, email_message)
+#    server.sendmail(Config.EMAIL_ADDRESS, Config.EMAIL_SMS, email_message)
