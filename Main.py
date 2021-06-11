@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from datetime import date
-
+ 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
