@@ -1,5 +1,6 @@
 # Script to drop database (useful for restructuring/rebuilding)
-import sqlite3, Config
+import Config
+import sqlite3
 
 connection = sqlite3.connect(Config.DB_FILE)
 

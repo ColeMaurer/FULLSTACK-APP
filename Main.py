@@ -1,19 +1,18 @@
 # Command line to start up app: uvicorn Main:app --reload  --- Remember the capital M!!
 # Then enter this address into a web browser: http://localhost:8000/ to get to the UI.
-
-import sqlite3, Config
-import uvicorn
+import Config
+import sqlite3
 from fastapi import FastAPI, Request, Form
-from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from datetime import date
- 
+from fastapi.templating import Jinja2Templates
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
+
 @app.get("/")
 def index(request: Request):
-    stock_filter = request.query_params.get('filter', False) # Initialized to False
+    stock_filter = request.query_params.get('filter', False)  # Initialized to False
 
     connection = sqlite3.connect(Config.DB_FILE)
     connection.row_factory = sqlite3.Row
@@ -54,11 +53,13 @@ def index(request: Request):
 
     indicator_rows = cursor.fetchall()
     indicator_values = {}
-# maybe this is where the lag comes from?
+    # maybe this is where the lag comes from?
     for row in indicator_rows:
         indicator_values[row['symbol']] = row
 
-    return templates.TemplateResponse("Index.html", {"request": request, "Stocks": rows, "indicator_values": indicator_values})
+    return templates.TemplateResponse("Index.html",
+                                      {"request": request, "Stocks": rows, "indicator_values": indicator_values})
+
 
 @app.get("/stock/{symbol}")
 def stock_detail(request: Request, symbol):
@@ -84,7 +85,9 @@ def stock_detail(request: Request, symbol):
 
     prices = cursor.fetchall()
 
-    return templates.TemplateResponse("Stock_Detail.html", {"request": request, "stock": row, "bars": prices, "strategies": strategies})
+    return templates.TemplateResponse("Stock_Detail.html",
+                                      {"request": request, "stock": row, "bars": prices, "strategies": strategies})
+
 
 @app.post("/apply_strategy")
 def apply_strategy(strategy_id: int = Form(...), stock_id: int = Form(...)):
@@ -98,6 +101,7 @@ def apply_strategy(strategy_id: int = Form(...), stock_id: int = Form(...)):
     connection.commit()
 
     return RedirectResponse(url=f"/strategy/{strategy_id}", status_code=303)
+
 
 @app.get("/strategy/{strategy_id}")
 def strategy(request: Request, strategy_id):
