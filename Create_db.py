@@ -1,4 +1,6 @@
-import sqlite3, Config
+# Script to create database
+import Config
+import sqlite3
 
 connection = sqlite3.connect(Config.DB_FILE)
 

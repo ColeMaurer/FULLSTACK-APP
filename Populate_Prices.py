@@ -1,6 +1,9 @@
-import sqlite3, Config
+# Script to populate prices
+import Config
+import sqlite3
+import numpy
+import tulipy
 import alpaca_trade_api as tradeapi
-import tulipy, numpy
 from datetime import date
 
 connection = sqlite3.connect(Config.DB_FILE)
