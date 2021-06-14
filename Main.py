@@ -58,7 +58,9 @@ def index(request: Request):
         indicator_values[row['symbol']] = row
 
     return templates.TemplateResponse("Index.html",
-                                      {"request": request, "Stocks": rows, "indicator_values": indicator_values})
+                                      {"request": request,
+                                       "Stocks": rows,
+                                       "indicator_values": indicator_values})
 
 
 @app.get("/stock/{symbol}")
@@ -86,7 +88,9 @@ def stock_detail(request: Request, symbol):
     prices = cursor.fetchall()
 
     return templates.TemplateResponse("Stock_Detail.html",
-                                      {"request": request, "stock": row, "bars": prices, "strategies": strategies})
+                                      {"request": request,
+                                       "stock": row, "bars": prices,
+                                       "strategies": strategies})
 
 
 @app.post("/apply_strategy")
@@ -126,4 +130,6 @@ def strategy(request: Request, strategy_id):
 
     stocks = cursor.fetchall()
 
-    return templates.TemplateResponse("Strategy.html", {"request": request, "stocks": stocks, "strategy": strategy})
+    return templates.TemplateResponse("Strategy.html", {"request": request,
+                                                        "stocks": stocks,
+                                                        "strategy": strategy})
