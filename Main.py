@@ -47,7 +47,7 @@ def index(request: Request):
 
     cursor.execute("""
         select symbol, rsi_14, sma_20, sma_50, close
-        from stock join stock_price on stock_price.stock_id = stock_id
+        from stock join stock_price on stock_price.stock_id = stock.id
         where date = (select max(date) from stock_price)
     """)
 
