@@ -9,6 +9,7 @@ import datetime as dt
 from datetime import date
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.rest import TimeFrame
+import smtplib
 
 # Email setup
 context = ssl.create_default_context()
@@ -39,32 +40,23 @@ symbols = [stock['symbol'] for stock in stocks]
 # Set a constant for UTC timezone
 UTC = pytz.timezone('UTC')
 current_date = date.today().isoformat()
-start_minute_bar = f"{current_date}T09:30:00-04:00"  # Market open       # Double check time zone
-end_minute_bar = f"{current_date}T09:45:00-04:00"  # 15 minutes later
+start_minute_bar = f"{current_date}T09:30:00-05:00"  # Market open       # Double check time zone
+end_minute_bar = f"{current_date}T09:45:00-05:00"  # 15 minutes later
 
-# Get the current time, 15minutes, and 1 hour ago
+# Get the current time, 15minutes, and 1 hour ago (for non-real time informational purposes)
 time_now = dt.datetime.now(tz=UTC)
 time_15_min_ago = time_now - dt.timedelta(minutes=15)
 time_1_hr_ago = time_now - dt.timedelta(hours=1)
 
 api = tradeapi.REST(Config.API_KEY, Config.SECRET_KEY, Config.API_URL, 'v2')  # added v2 to include updates.
-orders = api.list_orders(status='all', limit=500, after=f"{current_date}T13:30:00Z")
-# orders = api.list_orders()
+orders = api.list_orders(status='all', limit=500, after=f"{current_date}T13:30:00Z")  # Double check time?
 existing_order_symbols = [order.symbol for order in orders]
-
 messages = []
 
 for symbol in symbols:
-    # minute_bars = api.get_bars(symbol, TimeFrame.Minute,        # This comes from the alpaca example: long-short.py
-    #                          pd.Timestamp('now').date(),
-    #                          pd.Timestamp('now').date(), limit=1,
-    #                          adjustment='raw')
-
-    # Get data from previous hour
-    # If using the Free plan, the latest one can fetch is 15 minutes ago
     minute_bars = api.get_bars(symbol, TimeFrame.Minute,
-                               start=start_minute_bar,
-                               end=time_15_min_ago.isoformat(),   # The start and end need changed to real time
+                               pd.Timestamp('now').date(),
+                               pd.Timestamp('now').date(), limit=1,
                                adjustment='raw'
                                ).df
 
@@ -110,11 +102,11 @@ for symbol in symbols:
         else:
             print(f"Already an order for {symbol}, skipping")
 
-# with smtplib.SMTP_SSL(Config.EMAIL_HOST, Config.EMAIL_PORT, context=context) as server:
-#    server.login(Config.EMAIL_ADDRESS, Config.EMAIL_PASSWORD)
-#
-#    email_message = f"Subject: Trade Notifications for {current_date}\n\n"
-#    email_message += "\n\n".join(messages)
-#
-#    server.sendmail(Config.EMAIL_ADDRESS, Config.EMAIL_ADDRESS, email_message)
-#    server.sendmail(Config.EMAIL_ADDRESS, Config.EMAIL_SMS, email_message)
+# Sending trade notifications via email:
+with smtplib.SMTP_SSL(Config.EMAIL_HOST, Config.EMAIL_PORT, context=context) as server:
+    server.login(Config.EMAIL_ADDRESS, Config.EMAIL_PASSWORD)
+
+    email_message = f"Subject: Trade Notifications for {current_date}\n\n"
+    email_message += "\n\n".join(messages)
+
+    server.sendmail(Config.EMAIL_ADDRESS, Config.EMAIL_ADDRESS, email_message)
