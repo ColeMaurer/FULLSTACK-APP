@@ -11,7 +11,8 @@ cursor.execute("""
         id INTEGER PRIMARY KEY,
         symbol TEXT NOT NULL UNIQUE,
         name TEXT NOT NULL,
-        exchange TEXT NOT NULL
+        exchange TEXT NOT NULL,
+        shortable BOOLEAN NOT NULL
     )
 """)
 

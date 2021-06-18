@@ -21,7 +21,7 @@ connection.row_factory = sqlite3.Row  # instead of returning a tuple this will r
 cursor = connection.cursor()
 
 cursor.execute("""
-    select id from strategy where name = 'opening_range_breakout'
+    select id from strategy where name = 'opening_range_breakdown'
 """)
 
 strategy_id = cursor.fetchone()['id']
@@ -76,31 +76,34 @@ for symbol in symbols:
     after_opening_range_df = pd.DataFrame(after_opening_range_bars, columns=['open', 'high', 'low', 'close', 'volume'])
 
     # Creating dataframe of breakout candidates
-    after_opening_range_breakout = after_opening_range_df[after_opening_range_df['close'] > opening_range_high]
-    after_opening_range_breakout_df = pd.DataFrame(after_opening_range_breakout,
+    after_opening_range_breakdown = after_opening_range_df[after_opening_range_df['close'] < opening_range_low]
+    after_opening_range_breakdown_df = pd.DataFrame(after_opening_range_breakdown,
                                                    columns=['open', 'high', 'low', 'close', 'volume'])
 
-    if not after_opening_range_breakout.empty:  # if we have breakout candidates
+    if not after_opening_range_breakdown.empty:  # if we have breakout candidates
         if symbol not in existing_order_symbols:  # if we have not already bought a stock
-            limit_price = after_opening_range_breakout_df['close'].min()
-            messages.append(f"placing order for {symbol} at {limit_price}, closed above {opening_range_high}\n\n")
-            print(f"placing order for {symbol} at {limit_price}, closed above {opening_range_high}")
-
-            api.submit_order(
-                symbol=symbol,
-                side='buy',
-                type='limit',
-                qty='1',
-                time_in_force='day',
-                order_class='bracket',
-                limit_price=limit_price,
-                take_profit=dict(
-                    limit_price=limit_price + opening_range,
-                ),
-                stop_loss=dict(
-                    stop_price=limit_price - opening_range,
+            limit_price = after_opening_range_breakdown_df['close'].min()
+            message = f"Selling short {symbol} at {limit_price}, closed below {opening_range_low}\n\n"
+            messages.append(message)
+            print(message)
+            try:
+                api.submit_order(
+                    symbol=symbol,
+                    side='sell',
+                    type='limit',
+                    qty='1',
+                    time_in_force='day',
+                    order_class='bracket',
+                    limit_price=limit_price,
+                    take_profit=dict(
+                        limit_price=limit_price - opening_range,
+                    ),
+                    stop_loss=dict(
+                        stop_price=limit_price + opening_range,
+                    )
                 )
-            )
+            except Exception as e:
+                print(f"Could not submit order {e}")
         else:
             print(f"Already an order for {symbol}, skipping")
 
