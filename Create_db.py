@@ -48,7 +48,7 @@ cursor.execute("""
         FOREIGN KEY (strategy_id) REFERENCES strategy (id)
     )
 """)
-strategies = ['opening_range_breakout', 'opening_range_breakdown']
+strategies = ['opening_range_breakout', 'opening_range_breakdown', 'bollinger_bands']
 
 for strategy in strategies:
     cursor.execute("""

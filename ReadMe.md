@@ -30,12 +30,15 @@ CRON JOBS to run app: (I believe windows has similar scheduling stuff)
 2. This job runs at 10pm daily and updates the stock prices in the database. It outputs the print statements to the populate.log file:
 0 22 * * * /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/Populate_Prices.py >> /Users/Cole/Documents/Finances/Algo_Trading/populate.log 2>&1
 
-3. This job runs every minute of every hour between 8am and 4pm during the week Mon-Fri and run the opening_range_breakout script:
+3. This job runs every minute of every hour between 8am and 4pm during the week Mon-Fri and runs the opening_range_breakout script:
 */1 8-16 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/opening_range_breakout.py >> trade.log 2>&1
 
-4. This job runs every minute of every hour between 8am and 4pm during the week Mon-Fri and run the opening_range_breakdown script:
+4. This job runs every minute of every hour between 8am and 4pm during the week Mon-Fri and runs the opening_range_breakdown script:
 */1 8-16 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/opening_range_breakdown.py >> trade.log 2>&1
 
+5. This job runs every minute of every hour between 8am and 4pm during the week Mon-Fri and runs the bollinger bands script:
+*/1 8-16 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/bollinger_bands.py >> trade.log 2>&1
+   
 ** Resources:
 Alpaca Github:
 https://github.com/alpacahq/alpaca-trade-api-python
