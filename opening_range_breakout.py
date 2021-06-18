@@ -40,8 +40,8 @@ symbols = [stock['symbol'] for stock in stocks]
 # Set a constant for UTC timezone
 UTC = pytz.timezone('UTC')
 current_date = date.today().isoformat()
-start_minute_bar = f"{current_date}T09:30:00-05:00"  # Market open       # Double check time zone
-end_minute_bar = f"{current_date}T09:45:00-05:00"  # 15 minutes later
+start_minute_bar = f"{current_date}T13:30:00+00:00"  # Market open       # Double check time zone
+end_minute_bar = f"{current_date}T13:45:00+00:00"  # 15 minutes later
 
 # Get the current time, 15minutes, and 1 hour ago (for non-real time informational purposes)
 time_now = dt.datetime.now(tz=UTC)
@@ -56,24 +56,26 @@ messages = []
 for symbol in symbols:
     minute_bars = api.get_bars(symbol, TimeFrame.Minute,
                                pd.Timestamp('now').date(),
-                               pd.Timestamp('now').date(), limit=1,
+                               pd.Timestamp('now').date(),
                                adjustment='raw'
                                ).df
 
+    # Getting dataset for just the first 15 minutes
     opening_range_mask = (minute_bars.index >= start_minute_bar) & (minute_bars.index < end_minute_bar)
     opening_range_bars = minute_bars.loc[opening_range_mask]
-    # print(opening_range_bars)
     bars_df = pd.DataFrame(opening_range_bars, columns=['open', 'high', 'low', 'close', 'volume'])
 
+    # Determining the range of the opening dataset
     opening_range_low = bars_df['low'].min()
     opening_range_high = bars_df['high'].max()
     opening_range = opening_range_high - opening_range_low
 
+    # Creating separate dataframe for after the first 15 minutes
     after_opening_range_mask = minute_bars.index >= end_minute_bar
     after_opening_range_bars = minute_bars.loc[after_opening_range_mask]
-
     after_opening_range_df = pd.DataFrame(after_opening_range_bars, columns=['open', 'high', 'low', 'close', 'volume'])
 
+    # Creating dataframe of breakout candidates
     after_opening_range_breakout = after_opening_range_df[after_opening_range_df['high'] > opening_range_high]
     after_opening_range_breakout_df = pd.DataFrame(after_opening_range_breakout,
                                                    columns=['open', 'high', 'low', 'close', 'volume'])
