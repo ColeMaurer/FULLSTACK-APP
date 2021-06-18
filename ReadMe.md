@@ -44,5 +44,8 @@ https://github.com/alpacahq/alpaca-trade-api-python/tree/master/examples
 Long-Short Strategy:
 https://github.com/alpacahq/alpaca-trade-api-python/blob/master/examples/long-short.py
 
+Webpage Design:
+https://semantic-ui.com/introduction/getting-started.html
+
 Part Time Larry's Youtube Tutorial for full app development:
 https://www.youtube.com/playlist?list=PLvzuUVysUFOuoRna8KhschkVVUo2E2g6G
