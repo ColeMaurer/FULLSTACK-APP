@@ -39,6 +39,9 @@ CRON JOBS to run app: (I believe windows has similar scheduling stuff)
 5. This job runs every minute of every hour between 8am and 4pm during the week Mon-Fri and runs the bollinger bands script:
 */1 8-16 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/bollinger_bands.py >> trade.log 2>&1
    
+6. This job runs at 2:45 pm every weekday and runs the daily_close script which closes out any open positions
+45 14 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/daily_close.py >> trade.log 2>&1
+
 ** Resources:
 Alpaca Github:
 https://github.com/alpacahq/alpaca-trade-api-python

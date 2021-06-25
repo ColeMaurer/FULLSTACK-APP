@@ -10,6 +10,7 @@ from datetime import date
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.rest import TimeFrame
 import smtplib
+from helpers import calculate_quantity
 
 # Email setup
 context = ssl.create_default_context()
@@ -90,7 +91,7 @@ for symbol in symbols:
                 symbol=symbol,
                 side='buy',
                 type='limit',
-                qty='1',
+                qty=calculate_quantity(limit_price),
                 time_in_force='day',
                 order_class='bracket',
                 limit_price=limit_price,
