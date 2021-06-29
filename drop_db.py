@@ -11,6 +11,10 @@ cursor.execute("""
 """)
 
 cursor.execute("""
+    DROP TABLE stock_price_minute
+""")
+
+cursor.execute("""
     DROP TABLE stock
 """)
 
