@@ -1,4 +1,4 @@
 .idea/
 __pycache__/
-app.db
+Database/app.db
 Config.py
