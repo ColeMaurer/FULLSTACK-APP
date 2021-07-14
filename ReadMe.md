@@ -1,4 +1,4 @@
-Downloading and Building the Software:
+# Downloading and Building the Software:
 In terminal:
 1. Navigate to the folder where you would like to clone the FULLSTACK-APP repo into.
 2. Type "git clone https://github.com/ColeMaurer/FULLSTACK-APP.git"
@@ -13,7 +13,7 @@ In terminal:
   - Command line to start up app: uvicorn Main:app --reload  --- Remember the capital M!!
   - Then enter this address into a web browser: http://localhost:8000/ to get to the UI.
 
-Navigating the UI:
+# Navigating the UI:
   Search for stocks by filtering the main list - this is in the top left of the page. They can be sorted
 by new closing highs, new closing lows, or by other methods. It is recommended to search for stocks meeting
 one of these criteria before applying a trading strategy.
@@ -23,12 +23,12 @@ bottom left of the chart.
 After adding a few to the strategy through the UI the database should have the stocks in the stock_strategy table. 
 These are used in the opening_range_breakout/down.py scripts.
 
-Backtesting Trading Strategies:
+# Backtesting Trading Strategies:
 Run the populate_minute_data python script - this one takes a while. It gathers minute data for 1 year for the QQQ holdings. 
 Modify the backtest.py script to include the strategy, parameters, and stocks you would like to test. 
 Run this script to see the performance. 
 
-CRON JOBS to run app: (I believe windows has similar scheduling stuff)
+# CRON JOBS to run app: (I believe windows has similar scheduling stuff)
 1. This job runs at 10pm daily and updates the stock list in the database. It outputs the print statements to the populate.log file:
 0 22 * * * /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/Populate_Stocks.py >> /Users/Cole/Documents/Finances/Algo_Trading/populate.log 2>&1
 
@@ -47,20 +47,20 @@ CRON JOBS to run app: (I believe windows has similar scheduling stuff)
 6. This job runs at 2:45 pm every weekday and runs the daily_close script which closes out any open positions
 45 14 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/daily_close.py >> trade.log 2>&1
 
-** Resources:
-Alpaca Github:
+# Resources:
+**Alpaca Github:**
 https://github.com/alpacahq/alpaca-trade-api-python
-Examples:
+**Examples:**
 https://github.com/alpacahq/alpaca-trade-api-python/tree/master/examples
-Long-Short Strategy:
+**Long-Short Strategy:**
 https://github.com/alpacahq/alpaca-trade-api-python/blob/master/examples/long-short.py
 
-Backtesting:
+**Backtesting:**
 https://backtrader.com/docu/quickstart/quickstart/
 https://www.invesco.com/us/financial-products/etfs/holdings?audienceType=Investor&ticker=QQQ
 
-Webpage Design:
+**Webpage Design:**
 https://semantic-ui.com/introduction/getting-started.html
 
-Part Time Larry's Youtube Tutorial for full app development:
+**Part Time Larry's Youtube Tutorial for reference:**
 https://www.youtube.com/playlist?list=PLvzuUVysUFOuoRna8KhschkVVUo2E2g6G
