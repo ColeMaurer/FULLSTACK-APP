@@ -15,13 +15,18 @@ In terminal:
 
 Navigating the UI:
   Search for stocks by filtering the main list - this is in the top left of the page. They can be sorted
-by new closing highs or lows. Not necessary, but it is recommended to search for stocks meeting
+by new closing highs, new closing lows, or by other methods. It is recommended to search for stocks meeting
 one of these criteria before applying a trading strategy.
   Click on stocks of interest and add them to a trading strategy if they look like a good play
 based on price action and the Tradingview chart. To add them to a strategy click through the form on the
 bottom left of the chart.
 After adding a few to the strategy through the UI the database should have the stocks in the stock_strategy table. 
 These are used in the opening_range_breakout/down.py scripts.
+
+Backtesting Trading Strategies:
+Run the populate_minute_data python script - this one takes a while. It gathers minute data for 1 year for the QQQ holdings. 
+Modify the backtest.py script to include the strategy, parameters, and stocks you would like to test. 
+Run this script to see the performance. 
 
 CRON JOBS to run app: (I believe windows has similar scheduling stuff)
 1. This job runs at 10pm daily and updates the stock list in the database. It outputs the print statements to the populate.log file:
@@ -49,6 +54,10 @@ Examples:
 https://github.com/alpacahq/alpaca-trade-api-python/tree/master/examples
 Long-Short Strategy:
 https://github.com/alpacahq/alpaca-trade-api-python/blob/master/examples/long-short.py
+
+Backtesting:
+https://backtrader.com/docu/quickstart/quickstart/
+https://www.invesco.com/us/financial-products/etfs/holdings?audienceType=Investor&ticker=QQQ
 
 Webpage Design:
 https://semantic-ui.com/introduction/getting-started.html
