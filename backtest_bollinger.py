@@ -1,19 +1,22 @@
 import Config
 import backtrader
 import pandas
+import tulipy
 import sqlite3
 from datetime import date, datetime, time, timedelta
 
 
-class OpeningRangeBreakdown(backtrader.Strategy):
+class BollingerBands(backtrader.Strategy):
+    # Bollinger strat starts after 20 minute bars for tulipy lib
     params = dict(
-        num_opening_bars=15
+        market_open_length=20
     )
-
+    # Initializing values
     def __init__(self):
-        self.opening_range_low = 0
-        self.opening_range_high = 0
         self.opening_range = 0
+        self.current_candle_low = 0
+        self.current_candle_high = 0
+        self.current_candle_close = 0
         self.bought_today = False
         self.order = None
 
@@ -31,7 +34,7 @@ class OpeningRangeBreakdown(backtrader.Strategy):
         # Check if an order has been completed
         if order.status in [order.Completed]:
             order_details = f"{order.executed.price}, Cost: {order.executed.value}, Comm {order.executed.comm}"
-
+            # Logging order status
             if order.isbuy():
                 self.log(f"BUY EXECUTED, Price: {order_details}")
             else:  # Sell
@@ -41,48 +44,61 @@ class OpeningRangeBreakdown(backtrader.Strategy):
             self.log('Order Canceled/Margin/Rejected')
 
         self.order = None
-
+    # "next" is where the strategy lives
     def next(self):
         current_bar_datetime = self.data.num2date(self.data.datetime[0])
         previous_bar_datetime = self.data.num2date(self.data.datetime[-1])
-
+        # Don't think any of this group is needed.
         if current_bar_datetime.date() != previous_bar_datetime.date():
-            self.opening_range_low = self.data.low[0]
-            self.opening_range_high = self.data.high[0]
+            self.current_candle_low = self.data.low[0]
+            self.current_candle_high = self.data.high[0]
+            self.current_candle_close = self.data.close[0]
             self.bought_today = False
+        # Market hours
+        start_minute_bar = time(9, 30, 0)
+        end_minute_bar = time(4, 0, 0)
 
-        opening_range_start_time = time(9, 30, 0)
-        dt = datetime.combine(date.today(), opening_range_start_time) + timedelta(minutes=self.p.num_opening_bars)
-        opening_range_end_time = dt.time()
+        # Setting up data to be used by tulipy to calculate bollinger bands
+        market_open_mask = (data.index >= start_minute_bar) & (data.index < end_minute_bar)
+        market_open_bars = data.loc[market_open_mask]
 
-        if current_bar_datetime.time() >= opening_range_start_time \
-                and current_bar_datetime.time() < opening_range_end_time:
-            self.opening_range_high = max(self.data.high[0], self.opening_range_high)
-            self.opening_range_low = min(self.data.low[0], self.opening_range_low)
-            self.opening_range = self.opening_range_high - self.opening_range_low
-        else:
-            if self.order:
-                return
-            # Exit for a profit here (if close is less than opening range low minus range)
-            if self.position and (self.data.close[0] < (self.opening_range_low - self.opening_range)):
-                self.close()
-            # Entry point here: If we close below the opening range low
-            if self.data.close[0] < self.opening_range_low and not self.position and not self.bought_today:
-                self.order = self.sell()
-                self.bought_today = True
-            # Exit for a loss here (if close is greater than opening range low plus range)
-            if self.position and (self.data.close[0] > (self.opening_range_low + self.opening_range)):
-                self.order = self.close()
-            # Liquidate all positions at the end of the day:
-            if self.position and current_bar_datetime.time() >= time(15, 45, 0):
-                self.log("RUNNING OUT OF TIME - LIQUIDATING POSITION")
-                self.close()
+        # If we have 20 closing values (this number can be adjusted during strat refinement)
+        if len(market_open_bars) >= 20:
+            closes = market_open_bars.close.values
+            # Tulipy library analysis to calculate lower, middle, and upper bollinger bands:
+            lower, middle, upper = tulipy.bbands(closes, 20, 2)
+
+            current_candle = market_open_bars.iloc[-1]
+            previous_candle = market_open_bars.iloc[-2]
+
+            # Copied all of this from bollinger bands strat to define entry and exit points - much modification needed
+            if current_candle.close > lower[-1] and previous_candle.close < lower[-2]:
+            # closed above lower bollinger band")
+                limit_price = current_candle.close
+                candle_range = current_candle.high - current_candle.low
+                if self.order:
+                    return
+                # Exit for a profit here (if close is greater than opening range high plus range)
+                # May need to make limit_price et from above part of the self._____ class.
+                if self.position and (self.data.close[0] > (limit_price + candle_range * 3)):
+                    self.close()
+                # Entry point here: If we close above the opening range high
+                if current_candle.close > lower[-1] and previous_candle.close < lower[-2] and not self.position and not self.bought_today:
+                    self.order = self.buy()
+                    self.bought_today = True
+                # Exit for a loss here (if close is less than opening range high minus range)
+                if self.position and (self.data.close[0] < previous_candle.low):
+                    self.order = self.close()
+                # Liquidate all positions at the end of the day:
+                if self.position and current_bar_datetime.time() >= time(15, 45, 0):
+                    self.log("RUNNING OUT OF TIME - LIQUIDATING POSITION")
+                    self.close()
 
     # Back trader runs 'next' for the length of the data feed, then runs this stop
     # This is where we can print the results of the test
     def stop(self):
         self.log('(Num Opening Bars %2d) Ending Value %.2f' %
-                 (self.params.num_opening_bars, self.broker.getvalue()))
+                 (self.params.market_open_length, self.broker.getvalue()))
 
         if self.broker.getvalue() > 130000:
             self.log("*** BIG WINNER ***")
@@ -122,7 +138,7 @@ if __name__ == '__main__':
         data = backtrader.feeds.PandasData(dataname=dataframe)
 
         cerebro.adddata(data)
-        cerebro.addstrategy(OpeningRangeBreakdown)
+        cerebro.addstrategy(BollingerBands)
         # Optimized strategy (cannot run plot when doing this):
         # Remember to comment out line 124
         # strats = cerebro.optstrategy(OpeningRangeBreakout, num_opening_bars=[15, 30, 60])
