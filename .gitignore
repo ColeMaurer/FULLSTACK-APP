@@ -2,3 +2,5 @@
 __pycache__/
 app.db
 Config.py
+breakdown_backtest_15_30_60.txt
+breakout_backtest_15_30_60.txt

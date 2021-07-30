@@ -100,7 +100,7 @@ if __name__ == '__main__':
     """)
     stocks = cursor.fetchall()
     # For individual stock uncomment the following with the stock_id from the database:
-    stocks = [{'stock_id': 39}]
+    # stocks = [{'stock_id': 39}]
     # Make sure the stock_id entered above is actually in the database!
 
     for stock in stocks:
@@ -122,10 +122,11 @@ if __name__ == '__main__':
         data = backtrader.feeds.PandasData(dataname=dataframe)
 
         cerebro.adddata(data)
-        cerebro.addstrategy(OpeningRangeBreakout)
+        # cerebro.addstrategy(OpeningRangeBreakout)
         # Optimized strategy (cannot run plot when doing this):
-        # Remember to comment out line 124
-        # strats = cerebro.optstrategy(OpeningRangeBreakout, num_opening_bars=[15, 30, 60])
+        # Remember to comment out line 125
+        strats = cerebro.optstrategy(OpeningRangeBreakout, num_opening_bars=[15, 30, 60])
 
         cerebro.run()
-        #cerebro.plot()
+        # cerebro.analyzers
+        # cerebro.plot()

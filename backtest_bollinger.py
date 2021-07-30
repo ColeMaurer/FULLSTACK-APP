@@ -1,16 +1,18 @@
+import btalib
 import Config
-import backtrader
+import backtrader as bt
 import pandas
 import tulipy
 import sqlite3
 from datetime import date, datetime, time, timedelta
 
+import bollinger_bands
 
-class BollingerBands(backtrader.Strategy):
+
+class BollingerBands(bt.Strategy):
     # Bollinger strat starts after 20 minute bars for tulipy lib
-    params = dict(
-        market_open_length=20
-    )
+    params = (('period', 20),)
+
     # Initializing values
     def __init__(self):
         self.opening_range = 0
@@ -19,6 +21,7 @@ class BollingerBands(backtrader.Strategy):
         self.current_candle_close = 0
         self.bought_today = False
         self.order = None
+        bands = bt.indicators.BollingerBands(self.data, period=self.p.period)
 
     def log(self, txt, dt=None):
         if dt is None:
@@ -56,21 +59,23 @@ class BollingerBands(backtrader.Strategy):
             self.bought_today = False
         # Market hours
         start_minute_bar = time(9, 30, 0)
-        end_minute_bar = time(4, 0, 0)
+        # end_minute_bar = time(4, 0, 0)
 
         # Setting up data to be used by tulipy to calculate bollinger bands
-        market_open_mask = (data.index >= start_minute_bar) & (data.index < end_minute_bar)
-        market_open_bars = data.loc[market_open_mask]
+        dt = datetime.combine(date.today(), start_minute_bar) + timedelta(minutes=self.p.period)
+        opening_range_end_time = dt.time()
 
-        # If we have 20 closing values (this number can be adjusted during strat refinement)
-        if len(market_open_bars) >= 20:
-            closes = market_open_bars.close.values
+        if current_bar_datetime.time() >= start_minute_bar \
+                and current_bar_datetime.time() < opening_range_end_time:
+            # If we have 20 closing values (this number can be adjusted during strat refinement)
+            # if len(market_open_bars) >= 20:
+            closes = self.data.close
             # Tulipy library analysis to calculate lower, middle, and upper bollinger bands:
-            lower, middle, upper = tulipy.bbands(closes, 20, 2)
-
-            current_candle = market_open_bars.iloc[-1]
-            previous_candle = market_open_bars.iloc[-2]
-
+            lower = bt.indicators.BollingerBands(self.data, period=self.p.period).lines.lowerband
+            middle = bollinger_bands.middle
+            upper = bollinger_bands.upper
+            current_candle = data.iloc[-1]
+            previous_candle = data.iloc[-2]
             # Copied all of this from bollinger bands strat to define entry and exit points - much modification needed
             if current_candle.close > lower[-1] and previous_candle.close < lower[-2]:
             # closed above lower bollinger band")
@@ -98,7 +103,7 @@ class BollingerBands(backtrader.Strategy):
     # This is where we can print the results of the test
     def stop(self):
         self.log('(Num Opening Bars %2d) Ending Value %.2f' %
-                 (self.params.market_open_length, self.broker.getvalue()))
+                 (self.params.period, self.broker.getvalue()))
 
         if self.broker.getvalue() > 130000:
             self.log("*** BIG WINNER ***")
@@ -122,9 +127,9 @@ if __name__ == '__main__':
     for stock in stocks:
         print(f"== Testing {stock['stock_id']} ==")
 
-        cerebro = backtrader.Cerebro()
+        cerebro = bt.Cerebro()
         cerebro.broker.setcash(100000.0)
-        cerebro.addsizer(backtrader.sizers.PercentSizer, percents=95)
+        cerebro.addsizer(bt.sizers.PercentSizer, percents=95)
 
         dataframe = pandas.read_sql("""
             select datetime, open, high, low, close, volume
@@ -135,7 +140,7 @@ if __name__ == '__main__':
             order by datetime asc
         """, conn, params={"stock_id": stock['stock_id']}, index_col='datetime', parse_dates=['datetime'])
 
-        data = backtrader.feeds.PandasData(dataname=dataframe)
+        data = bt.feeds.PandasData(dataname=dataframe)
 
         cerebro.adddata(data)
         cerebro.addstrategy(BollingerBands)
