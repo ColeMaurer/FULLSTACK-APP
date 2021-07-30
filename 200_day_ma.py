@@ -11,18 +11,17 @@ import pandas_market_calendars as market_calendar
 import tulipy
 import math
 
-# get last days of month
+# Getting last days of month, stock to trade
 nyse = market_calendar.get_calendar('NYSE')
 df = nyse.schedule(start_date='2000-01-01', end_date='2021-12-31')
 df = df.groupby(df.index.strftime('%Y-%m')).tail(1)
 df['date'] = pandas.to_datetime(df['market_open']).dt.date
 last_days_of_month = [date.isoformat() for date in df['date'].tolist()]
-
 symbol = 'SPY'
 
 # Alpaca Account Info:
 # ----------------------------------------------------------------------------- #
-api = tradeapi.REST(Config.API_KEY, Config.SECRET_KEY, base_url=Config.API_URL)
+api = tradeapi.REST(Config.API_KEY, Config.SECRET_KEY, Config.API_URL, 'v2')  # added v2 to include updates.
 # Get our account information.
 account = api.get_account()
 # Check if our account is restricted from trading.
@@ -33,7 +32,7 @@ cash = float(account.buying_power)
 # ----------------------------------------------------------------------------- #
 
 # Gathering price data:
-barsets = api.get_bars(symbol, TimeFrame.Day, start='2018-01-01', end=date.today().isoformat(), adjustment='raw')
+barsets = api.get_bars(symbol, TimeFrame.Day, start='2020-01-01', end=date.today().isoformat(), adjustment='raw')
 recent_closes = [bar.c for bar in barsets]
 print(f"processing symbol {symbol}")
 bar_date = [bar.t.date().isoformat() for bar in barsets]
@@ -46,8 +45,8 @@ for bar in barsets:
     if todays_date == bar_date:
         if todays_date in last_days_of_month:
             sma_200 = tulipy.sma(numpy.array(recent_closes), period=200)
-            print(sma_200)
-            if recent_closes[-1] > sma_200:
+            print(sma_200[-1])
+            if recent_closes[-1] > sma_200[-1]:
                 # Check if we already have an order:
                 # Unless we don't care about old orders? All in on SPY baby!!
                 api.submit_order(
@@ -60,3 +59,5 @@ for bar in barsets:
             elif recent_closes < sma_200:
                 # Bail! Go back to holding cash.
                 api.close_all_positions()
+        else:
+            print("Today is not the end of the month!")
