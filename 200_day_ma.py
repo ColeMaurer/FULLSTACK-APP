@@ -13,7 +13,7 @@ import math
 
 # Getting last days of month, stock to trade
 nyse = market_calendar.get_calendar('NYSE')
-df = nyse.schedule(start_date='2000-01-01', end_date='2021-12-31')
+df = nyse.schedule(start_date='2020-01-01', end_date='2031-12-31')
 df = df.groupby(df.index.strftime('%Y-%m')).tail(1)
 df['date'] = pandas.to_datetime(df['market_open']).dt.date
 last_days_of_month = [date.isoformat() for date in df['date'].tolist()]
@@ -21,7 +21,7 @@ symbol = 'SPY'
 
 # Alpaca Account Info:
 # ----------------------------------------------------------------------------- #
-api = tradeapi.REST(Config.API_KEY, Config.SECRET_KEY, Config.API_URL, 'v2')  # added v2 to include updates.
+api = tradeapi.REST(Config.LIVE_API_KEY, Config.LIVE_SECRET_KEY, Config.LIVE_API_URL, 'v2')
 # Get our account information.
 account = api.get_account()
 # Check if our account is restricted from trading.

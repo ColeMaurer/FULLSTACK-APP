@@ -47,6 +47,10 @@ Run this script to see the performance.
 6. This job runs at 2:45 pm every weekday and runs the daily_close script which closes out any open positions
 45 14 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK-APP/daily_close.py >> trade.log 2>&1
 
+7. This job runs at 2:00 pm every weekday and runs the 200 day moving average script:
+0 14 * * 1-5 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3 /Users/Cole/Documents/Finances/Algo_Trading/FULLSTACK_APP/200_day_ma.py >> trade.log 2>&1
+
+
 # Resources:
 **Alpaca Github:**
 https://github.com/alpacahq/alpaca-trade-api-python
@@ -54,6 +58,8 @@ https://github.com/alpacahq/alpaca-trade-api-python
 https://github.com/alpacahq/alpaca-trade-api-python/tree/master/examples
 **Long-Short Strategy:**
 https://github.com/alpacahq/alpaca-trade-api-python/blob/master/examples/long-short.py
+**200 Day Moving Average Strategy That Crushes Buy and Hold:**
+https://www.newtraderu.com/2021/06/30/200-day-moving-average-vs-buy-and-hold/
 
 **Backtesting:**
 https://backtrader.com/docu/quickstart/quickstart/
