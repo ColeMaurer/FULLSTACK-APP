@@ -28,7 +28,9 @@ account = api.get_account()
 if account.trading_blocked:
     print('Account is currently restricted from trading.')
 # Check how much money we can use to open new positions:
-cash = float(account.buying_power)
+buying_power = float(account.buying_power)
+equity = float(account.equity)
+cash = buying_power - equity
 # ----------------------------------------------------------------------------- #
 
 # Gathering price data:
